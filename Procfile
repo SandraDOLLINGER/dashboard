@@ -1,0 +1,1 @@
+web: uvicorn dashboard-streamlit:Accueil --host 0.0.0.0 --port $PORT
