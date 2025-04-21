@@ -16,8 +16,16 @@ st.title("Dashboard de Scoring de Crédit",
 # Message d'introduction
 st.write("Bienvenue sur l'application de scoring de crédit de la société Prêt à Dépenser")
 st.caption("Renseignez un numéro client ci dessous, puis utilisez le menu de gauche pour naviguer entre les différentes sections :")
+
+# initialisation du client
 if "client_id" not in st.session_state:
     st.session_state.client_id = None
+
+# Vérification du changement de client et réinitialisation de la prédiction si nécessaire
+if "prediction" in st.session_state:
+    previous_client_id = st.session_state.get("client_id", None)
+else:
+    previous_client_id = None
 
 # Saisie du numéro de client
 selected_client = st.text_input(label="Numéro client",
@@ -25,13 +33,24 @@ selected_client = st.text_input(label="Numéro client",
                                 placeholder="Entrez le numéro client ...",
                                 max_chars=6,
                                 label_visibility="collapsed")
-st.session_state.client_id = selected_client
+
+# Si le client sélectionné a changé, réinitialiser la prédiction
+if selected_client and selected_client != previous_client_id:
+    if "prediction" in st.session_state:
+        del st.session_state["prediction"]  # Supprimer la prédiction existante
+    st.session_state.client_id = selected_client  # Mettre à jour le client_id
+    
+# vérification du client
 if selected_client:
     if selected_client.isdigit() and len(selected_client) == 6:
         client_id_int = int(selected_client)
         if client_id_int in df_sample.index:
             st.session_state.client_id = selected_client
-            st.success(f"Client sélectionné : {selected_client}")
+            if "prediction" not in st.session_state:
+                # avertir l'utilisateur si la prédiction n'a pas été faite
+                st.warning(f"Client {selected_client} sélectionné, veuillez vous diriger sur la page de prédiction.")
+            else :
+                st.success(f"Client sélectionné : {selected_client}")
         else:
             st.error("Ce numéro client n'existe pas dans les données.")
     else:

@@ -18,6 +18,7 @@ taille_texte = st.sidebar.radio("Taille du texte", ["Normal", "Grand"])
 if taille_texte == "Grand":
     st.markdown("<style>html, body, [class*='css'] { font-size: 18px !important; }</style>", unsafe_allow_html=True)
 client_id = st.session_state.get("client_id", None)
+prediction_client = st.session_state.get("prediction", None)
 
 # Vérification que client_id existe, n'est pas vide et est un nombre entier
 if not client_id or not client_id.isdigit():
@@ -26,14 +27,13 @@ if not client_id or not client_id.isdigit():
         st.switch_page("Accueil.py")
     st.stop()
 
-# Vérification de la prédiction
-if "prediction" not in st.session_state:
+# Vérification que la prédiction est faite
+if prediction_client is None:
     st.warning("La prédiction n'est pas disponible. Veuillez passer par la page Prédiction.")
     if st.button("Aller à la page Prédiction ..."):
         st.switch_page("pages/1_Prédiction.py")
     st.stop()
 
-prediction_client = st.session_state.prediction
 client_id_int = int(client_id)
 
 # définition des couleurs
