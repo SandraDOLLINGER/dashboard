@@ -26,6 +26,14 @@ if not client_id or not client_id.isdigit():
         st.switch_page("Accueil.py")
     st.stop()
 
+# Vérification de la prédiction
+if "prediction" not in st.session_state:
+    st.warning("La prédiction n'est pas disponible. Veuillez passer par la page Prédiction.")
+    if st.button("Aller à la page Prédiction ..."):
+        st.switch_page("pages/1_Prédiction.py")
+    st.stop()
+
+prediction_client = st.session_state.prediction
 client_id_int = int(client_id)
 
 # définition des couleurs
@@ -236,7 +244,8 @@ with tab_c:
 
         # Ajout du point client
         fig.add_trace(go.Scatter(
-            x=["Clients avec incidents de paiement" if df_pour_streamlit.loc[client_id_int, "TARGET"] == 1 else "Clients sans incidents de paiement"],
+            # x=["Clients avec incidents de paiement" if df_pour_streamlit.loc[client_id_int, "TARGET"] == 1 else "Clients sans incidents de paiement"],
+            x=["Clients avec incidents de paiement" if prediction_client == 1 else "Clients sans incidents de paiement"],
             y=[df_streamlit_filtered.loc[client_id_int, variable_choisie]],
             mode='markers',
             marker=dict(color=color_client, size=16, symbol="x"),

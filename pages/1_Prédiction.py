@@ -91,6 +91,7 @@ with col1:
                 if result is not None:
                     prediction_classe = result["prediction"]
                     probability = result["probability"]
+                    st.session_state.prediction = prediction_classe
                     st.write(f"**Prédiction :** {'Refusé' if prediction_classe == 1 else 'Accepté'}")
                     st.write(f"**Probabilité de refus :** {probability:.2%}")  
                     st.divider()
