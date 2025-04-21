@@ -1,31 +1,13 @@
 import streamlit as st
 import requests
 import numpy as np
-import matplotlib.pyplot as plt
-import streamviz
 import pandas as pd
-import plotly.express as px
-import joblib
-import shap
 import plotly.graph_objects as go
-
-
-
 
 # URL de l'API deployée sur heroku
 API_URL = "https://application-prediction-scoring-b81541cc2c3b.herokuapp.com/predict"
 
 probability = None
-# charger les données
-df_sample = pd.read_csv('df_sample.csv')
-# définir SK_ID_CUR en index
-df_sample = df_sample.set_index('SK_ID_CURR')
-# charger le scaler
-scaler = joblib.load('scaler.pkl')
-# charger le modele
-modele_retenu = joblib.load('modele_retenu.pkl')
-# charger l'explaineur shap
-shap_explainer = joblib.load('global_explainer.pkl')
 
 df_pour_streamlit = pd.read_csv('df_pour_streamlit.csv')
 df_pour_streamlit = df_pour_streamlit.set_index('SK_ID_CURR')
@@ -50,17 +32,17 @@ transposed_df_streamlit_filtered = df_streamlit_filtered.T
 # récupérer le meilleur seuil retenu
 meilleur_seuil_value = 0.5050505050505051
 
-X = df_sample.drop(columns=['TARGET'])
+st.title("Prédiction du score de crédit pour le client",
+         help="Cette page affiche la prédiction du modèle pour le client sélectionné : accepté ou refusé. Vous y trouverez la probabilité de refus, les informations principales du client, et une jauge visuelle montrant sa position par rapport au seuil de décision.")
 
-X_scaled = scaler.transform(X)
-# definir un df avec X_scaled
-X_scaled_df = pd.DataFrame(X_scaled,
-                           index=X.index,
-                           columns=X.columns)
+st.sidebar.image("16794938722698_Data Scientist-P7-01-banner.png",
+                 caption="Illustration : société Prêt à dépenser",
+                 use_container_width=True)
 
-st.title("Prédiction du score de crédit pour le client")
-
-st.sidebar.image("16794938722698_Data Scientist-P7-01-banner.png")
+# accessibilité taille du texte
+taille_texte = st.sidebar.radio("Taille du texte", ["Normal", "Grand"])
+if taille_texte == "Grand":
+    st.markdown("<style>html, body, [class*='css'] { font-size: 18px !important; }</style>", unsafe_allow_html=True)
 
 client_id = st.session_state.get("client_id", None)
 
@@ -70,10 +52,6 @@ if not client_id or not client_id.isdigit():
     if st.button("Retour à l'accueil ..."):
         st.switch_page("Accueil.py")
     st.stop()
-
-
-
-
 
 #client_transposed_df_streamlit_filtered = transposed_df_streamlit_filtered.loc(int(client_id))
 df_info_client = df_streamlit_filtered.loc[[int(client_id)]]
@@ -126,7 +104,9 @@ with col2:
         fig = go.Figure(go.Indicator(
             mode="gauge+number",
             value=probability,
-            title={'text': "Probabilité d'incident de paiement du client"},
+            title={'text': "Probabilité d'incident de paiement du client",
+                   'font': {'color':'black'}},
+            number={'font': {'color' : 'black'}},
             domain={'x': [0, 1], 'y': [0, 1]}, 
             gauge={
                 'axis': {
@@ -134,17 +114,18 @@ with col2:
                     'showticklabels': True,
                     'ticks': "",
                     'tickwidth': 0,
-                    'tickcolor': "white"
+                    'tickcolor': "white",
+                    'tickfont': {'color':'black'}
                 },
                 'bgcolor': "white",
-                'bar': {'color': "grey"},
+                'bar': {'color': "black"},
                 'steps': [
-                    {'range': [0.0, (meilleur_seuil_value - 0.1)], 'color': "palegreen"},
-                    {'range': [(meilleur_seuil_value - 0.1), (meilleur_seuil_value + 0.1)], 'color': "navajowhite"},
-                    {'range': [(meilleur_seuil_value + 0.1), 1.0], 'color': "darksalmon"}
+                    {'range': [0.0, (meilleur_seuil_value - 0.01)], 'color': "#046B38"},
+                    {'range': [(meilleur_seuil_value - 0.01), (meilleur_seuil_value + 0.01)], 'color': "#F3F243"},
+                    {'range': [(meilleur_seuil_value + 0.01), 1.0], 'color': "#D52221"}
                 ],
                 'threshold': {
-                    'line': {'color': "orangered", 'width': 4},
+                    'line': {'color': "#007FFF", 'width': 4},
                     'thickness': 1,
                     'value': meilleur_seuil_value
                 }
@@ -165,19 +146,19 @@ with col2:
         st.markdown("""
         <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 10px;">
             <div style="display: flex; align-items: center;">
-                <div style="width: 15px; height: 15px; background-color: palegreen; margin-right: 5px;"></div>
+                <div style="width: 15px; height: 15px; background-color: #046B38; margin-right: 5px;"></div>
                 Zone de faible risque
             </div>
             <div style="display: flex; align-items: center;">
-                <div style="width: 15px; height: 15px; background-color: navajowhite; margin-right: 5px;"></div>
+                <div style="width: 15px; height: 15px; background-color: #F3F243; margin-right: 5px;"></div>
                 Zone intermédiaire
             </div>
             <div style="display: flex; align-items: center;">
-                <div style="width: 15px; height: 15px; background-color: darksalmon; margin-right: 5px;"></div>
+                <div style="width: 15px; height: 15px; background-color: #D52221; margin-right: 5px;"></div>
                 Zone de risque élevé
             </div>
             <div style="display: flex; align-items: center;">
-                <div style="width: 15px; height: 4px; background-color: orangered; margin-right: 5px;"></div>
+                <div style="width: 15px; height: 4px; background-color: #007FFF; margin-right: 5px;"></div>
                 Seuil de décision
             </div>
         </div>
